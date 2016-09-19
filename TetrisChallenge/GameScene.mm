@@ -105,6 +105,23 @@
     _bestScoreLabel.text = [NSString stringWithFormat:@"Best: %d", bestScore];
 }
 
+-(void) updateDisplay {
+    tetris->getBoardLayout(boardLayout);
+    for (int r = 0; r < rowCount; r++) {
+        for (int c = 0; c < colCount; c++) {
+            _boardNodes[rowCount - r - 1][c].fillColor = _colorArray[boardLayout[r * colCount + c]];
+        }
+    }
+    _scoreLabel.text = [NSString stringWithFormat:@"Score: %d", tetris->score];
+    _levelLabel.text = [NSString stringWithFormat:@"Level: %d", tetris->level];
+    if(bestScore < tetris->score) {
+        bestScore = tetris->score;
+        _bestScoreLabel.text = [NSString stringWithFormat:@"Best: %d", bestScore];
+        [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithInt:bestScore] forKey:@"bestScore"];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+    }
+}
+
 -(void)update:(CFTimeInterval)currentTime {
     if(tetris->gameState != GAMESTATE_PLAYING) {
         if(!_hintsViewNode.parent)
@@ -118,20 +135,7 @@
     if(cummulativeTime > speed) {
         cummulativeTime -= speed;
         tetris->update();
-        tetris->getBoardLayout(boardLayout);
-        for (int r = 0; r < rowCount; r++) {
-            for (int c = 0; c < colCount; c++) {
-                _boardNodes[rowCount - r - 1][c].fillColor = _colorArray[boardLayout[r * colCount + c]];
-            }
-        }
-        _scoreLabel.text = [NSString stringWithFormat:@"Score: %d", tetris->score];
-        _levelLabel.text = [NSString stringWithFormat:@"Level: %d", tetris->level];
-        if(bestScore < tetris->score) {
-            bestScore = tetris->score;
-            _bestScoreLabel.text = [NSString stringWithFormat:@"Best: %d", bestScore];
-            [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithInt:bestScore] forKey:@"bestScore"];
-            [[NSUserDefaults standardUserDefaults] synchronize];
-        }
+        [self updateDisplay];
     }
 }
 
@@ -140,6 +144,7 @@
         [self resetGame];
     else
         tetris->rotate();
+    [self updateDisplay];
 }
 
 -(void)swipeGestureActionLeft: (UISwipeGestureRecognizer *)gesture {
@@ -147,6 +152,7 @@
         return;
     
     tetris->moveLeft();
+    [self updateDisplay];
 }
 
 -(void)swipeGestureActionDown: (UISwipeGestureRecognizer *)gesture {
@@ -154,6 +160,7 @@
         return;
     
     tetris->moveDown();
+    [self updateDisplay];
 }
 
 -(void)swipeGestureActionRight: (UISwipeGestureRecognizer *)gesture {
@@ -161,6 +168,7 @@
         return;
     
     tetris->moveRight();
+    [self updateDisplay];
 }
 
 
